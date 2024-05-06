@@ -86,14 +86,15 @@ function Test-CommandExists {
 }
 
 # Editor Configuration
-$EDITOR = if (Test-CommandExists nvim) { 'nvim' }
-          elseif (Test-CommandExists pvim) { 'pvim' }
-          elseif (Test-CommandExists vim) { 'vim' }
-          elseif (Test-CommandExists vi) { 'vi' }
-          elseif (Test-CommandExists code) { 'code' }
-          elseif (Test-CommandExists notepad++) { 'notepad++' }
-          elseif (Test-CommandExists sublime_text) { 'sublime_text' }
-          else { 'notepad' }
+$EDITOR =
+    if (Test-CommandExists nvim) { 'nvim' }
+    elseif (Test-CommandExists pvim) { 'pvim' }
+    elseif (Test-CommandExists vim) { 'vim' }
+    elseif (Test-CommandExists vi) { 'vi' }
+    elseif (Test-CommandExists code) { 'code' }
+    elseif (Test-CommandExists notepad++) { 'notepad++' }
+    elseif (Test-CommandExists sublime_text) { 'sublime_text' }
+    else { 'notepad' }
 Set-Alias -Name vim -Value $EDITOR
 
 function Edit-Profile {
@@ -132,16 +133,16 @@ function hb {
         Write-Error "No file path specified."
         return
     }
-    
+
     $FilePath = $args[0]
-    
+
     if (Test-Path $FilePath) {
         $Content = Get-Content $FilePath -Raw
     } else {
         Write-Error "File path does not exist."
         return
     }
-    
+
     $uri = "http://bin.christitus.com/documents"
     try {
         $response = Invoke-RestMethod -Uri $uri -Method Post -Body $Content -ErrorAction Stop
@@ -185,13 +186,13 @@ function pgrep($name) {
 }
 
 function head {
-  param($Path, $n = 10)
-  Get-Content $Path -Head $n
+    param($Path, $n = 10)
+    Get-Content $Path -Head $n
 }
 
 function tail {
-  param($Path, $n = 10)
-  Get-Content $Path -Tail $n
+    param($Path, $n = 10)
+    Get-Content $Path -Tail $n
 }
 
 # Quick File Creation
@@ -270,3 +271,10 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
         Write-Error "Failed to install zoxide. Error: $_"
     }
 }
+
+## My own functions
+function dw { dotnet watch --no-hot-reload }
+
+Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+
+# $env:POWERSHELL_UPDATECHECK = 'Off'
