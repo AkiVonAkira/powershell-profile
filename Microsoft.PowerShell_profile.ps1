@@ -86,15 +86,14 @@ function Test-CommandExists {
 }
 
 # Editor Configuration
-$EDITOR =
-    if (Test-CommandExists nvim) { 'nvim' }
-    elseif (Test-CommandExists pvim) { 'pvim' }
-    elseif (Test-CommandExists vim) { 'vim' }
-    elseif (Test-CommandExists vi) { 'vi' }
-    elseif (Test-CommandExists code) { 'code' }
-    elseif (Test-CommandExists notepad++) { 'notepad++' }
-    elseif (Test-CommandExists sublime_text) { 'sublime_text' }
-    else { 'notepad' }
+$EDITOR = if (Test-CommandExists nvim) { 'nvim' }
+          elseif (Test-CommandExists pvim) { 'pvim' }
+          elseif (Test-CommandExists vim) { 'vim' }
+          elseif (Test-CommandExists vi) { 'vi' }
+          elseif (Test-CommandExists code) { 'code' }
+          elseif (Test-CommandExists notepad++) { 'notepad++' }
+          elseif (Test-CommandExists sublime_text) { 'sublime_text' }
+          else { 'notepad' }
 Set-Alias -Name vim -Value $EDITOR
 
 function Edit-Profile {
@@ -186,13 +185,13 @@ function pgrep($name) {
 }
 
 function head {
-    param($Path, $n = 10)
-    Get-Content $Path -Head $n
+  param($Path, $n = 10)
+  Get-Content $Path -Head $n
 }
 
 function tail {
-    param($Path, $n = 10)
-    Get-Content $Path -Tail $n
+  param($Path, $n = 10)
+  Get-Content $Path -Tail $n
 }
 
 # Quick File Creation
@@ -250,6 +249,16 @@ function cpy { Set-Clipboard $args[0] }
 
 function pst { Get-Clipboard }
 
+# Import External Functions File
+# Any Custom Functions can be placed into $FUNCTIONS located in the same folder as $PROFILE
+$env:DOCUMENTS = [Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)
+$FUNCTIONS = "$env:DOCUMENTS\PowerShell\Additional.Functions.ps1"
+if (-not (Test-Path -Path $FUNCTIONS)) {
+    New-Item -Path $FUNCTIONS -ItemType File
+} else {
+    Import-Module -Force -Name $FUNCTIONS
+}
+
 # Enhanced PowerShell Experience
 Set-PSReadLineOption -Colors @{
     Command = 'Yellow'
@@ -257,8 +266,22 @@ Set-PSReadLineOption -Colors @{
     String = 'DarkCyan'
 }
 
+# Get theme from profile.ps1 or use a default theme
+function Get-Theme {
+    if (Test-Path -Path $PROFILE.CurrentUserAllHosts -PathType leaf) {
+        $existingTheme = Select-String -Raw -Path $PROFILE.CurrentUserAllHosts -Pattern "oh-my-posh init pwsh --config"
+        if ($null -ne $existingTheme) {
+            Invoke-Expression $existingTheme
+            return
+        }
+    } else {
+        oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
+    }
+}
+
 ## Final Line to set prompt
-oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
+Get-Theme
+
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
     Invoke-Expression (& { (zoxide init powershell | Out-String) })
 } else {
@@ -271,10 +294,3 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
         Write-Error "Failed to install zoxide. Error: $_"
     }
 }
-
-## My own functions
-function dw { dotnet watch --no-hot-reload }
-
-Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
-
-# $env:POWERSHELL_UPDATECHECK = 'Off'
